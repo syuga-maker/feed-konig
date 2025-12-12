@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>König喂食大作战！</title>
     <style>
-        /* --- 🎨 全局配色：活泼可爱风 --- */
+        /* --- 🎨 全局配色 --- */
         body {
             font-family: "Varela Round", "Segoe UI", Roboto, Arial, sans-serif;
             background-color: #fff9c4; 
@@ -21,61 +21,78 @@
             flex-direction: column;
         }
 
-        /* --- 顶部仪表盘 --- */
+        /* --- 顶部区域 (包含暂停按钮和仪表盘) --- */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            z-index: 20;
+        }
+
+        /* 暂停按钮 */
+        .btn-pause {
+            width: 45px;
+            height: 45px;
+            background: #fff;
+            border: 3px solid #ffa726;
+            border-radius: 50%;
+            font-size: 20px;
+            color: #ffa726;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .btn-pause:active { transform: scale(0.9); }
+
+        /* 仪表盘 */
         .dashboard {
+            flex: 1; /* 占满剩余空间 */
             background: #ffffff;
-            margin: 10px 15px;
-            padding: 10px 0;
+            padding: 5px 0;
             border-radius: 20px;
             display: flex;
-            justify-content: space-around; /* 三等分 */
+            justify-content: space-around;
             align-items: center;
             box-shadow: 0 8px 20px rgba(255, 167, 38, 0.2);
-            z-index: 20;
-            height: 75px;
+            height: 65px;
         }
 
-        .dash-item {
-            text-align: center;
-            flex: 1; /* 均分宽度 */
-        }
-
+        .dash-item { text-align: center; flex: 1; }
         .dash-label {
-            font-size: 11px;
-            color: #ffa726;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 2px;
+            font-size: 10px; color: #ffa726; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;
         }
-
         .dash-value {
-            font-size: 28px; /* 稍微调小一点以容纳3个数字 */
-            font-weight: 900;
-            font-family: "Courier New", monospace;
+            font-size: 24px; font-weight: 900; font-family: "Courier New", monospace;
         }
 
         #timer { color: #ff7043; } 
         #score { color: #66bb6a; } 
-        #best-score { color: #ab47bc; } /* 紫色显示最高分 */
+        #best-score { color: #ab47bc; }
 
         /* --- 游戏主区域 --- */
         .game-area {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: center; /* 垂直居中 */
             position: relative;
+            /* 【优化3】底部增加留白，把网格顶上去，远离传送带 */
+            padding-bottom: 140px; 
         }
 
         /* 3x3 网格 */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            width: 320px;
-            max-width: 90vw;
+            gap: 15px; /* 间距 */
+            width: 300px; /* 固定最大宽度 */
+            /* 【优化3】限制宽度为80vw，保证手机左右有各10%的空隙扔垃圾 */
+            max-width: 80vw; 
             margin: 0 auto;
-            transform: translateY(-20px); 
         }
 
         .hole {
@@ -90,146 +107,102 @@
             transition: transform 0.1s;
         }
 
-        /* 预警动画 */
         @keyframes warning-pulse {
             0% { border-color: #ffcc80; background-color: #ffe0b2; }
             50% { border-color: #ff80ab; background-color: #ffecb3; box-shadow: 0 0 15px #ff80ab; }
             100% { border-color: #ffcc80; background-color: #ffe0b2; }
         }
-        .hole.warning {
-            animation: warning-pulse 0.4s infinite;
-        }
+        .hole.warning { animation: warning-pulse 0.4s infinite; }
 
-        /* 角色图片 */
         .character-img {
-            width: 85%;
-            height: 85%;
-            object-fit: contain;
-            position: absolute;
-            bottom: -100%;
-            left: 7.5%;
+            width: 85%; height: 85%; object-fit: contain;
+            position: absolute; bottom: -100%; left: 7.5%;
             transition: bottom 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             pointer-events: none;
             filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
         }
-
-        .hole.active .character-img {
-            bottom: 5px;
-        }
+        .hole.active .character-img { bottom: 5px; }
 
         /* --- 底部传送带 --- */
         .food-belt-container {
             position: absolute;
             bottom: 0;
             width: 100%;
+            height: 130px; /* 固定高度 */
             background-color: #ffffff;
             border-top-left-radius: 30px;
             border-top-right-radius: 30px;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
             padding-bottom: env(safe-area-inset-bottom);
+            z-index: 10;
         }
         
         .belt-tip {
-            text-align: center;
-            font-size: 13px;
-            color: #90a4ae;
-            padding-top: 10px;
-            font-weight: bold;
+            text-align: center; font-size: 13px; color: #90a4ae; padding-top: 10px; font-weight: bold;
         }
 
         .food-belt {
-            height: 110px;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 10px;
+            height: 90px;
+            display: flex; align-items: center; justify-content: space-around; padding: 0 10px;
         }
 
         .draggable-item {
-            font-size: 60px;
-            cursor: grab;
-            position: relative; 
-            z-index: 100;
-            line-height: 1;
-            transition: transform 0.1s;
-            filter: drop-shadow(0 3px 0px rgba(0,0,0,0.1));
+            font-size: 60px; cursor: grab; position: relative; z-index: 100;
+            line-height: 1; transition: transform 0.1s; filter: drop-shadow(0 3px 0px rgba(0,0,0,0.1));
         }
         .draggable-item:active { transform: scale(1.15) rotate(5deg); }
 
         .dragging-ghost {
-            position: fixed;
-            font-size: 70px;
-            pointer-events: none;
-            opacity: 0.9;
-            z-index: 999;
+            position: fixed; font-size: 70px; pointer-events: none; opacity: 0.9; z-index: 999;
         }
 
-        /* --- 弹窗样式 --- */
-        #game-over-modal, #start-overlay {
+        /* --- 弹窗样式 (通用) --- */
+        .overlay-modal {
             display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(5px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px);
             z-index: 1000;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column; justify-content: center; align-items: center;
             animation: fadeIn 0.3s;
         }
         #start-overlay { display: flex; }
 
         .modal-content {
-            background: #fff;
-            padding: 30px;
-            border-radius: 30px;
-            text-align: center;
-            border: 4px solid #ffcc80;
-            box-shadow: 0 10px 30px rgba(255, 167, 38, 0.3);
-            width: 80%;
-            max-width: 350px;
+            background: #fff; padding: 30px; border-radius: 30px; text-align: center;
+            border: 4px solid #ffcc80; box-shadow: 0 10px 30px rgba(255, 167, 38, 0.3);
+            width: 80%; max-width: 350px;
         }
 
         .modal-title { font-size: 28px; color: #ff7043; margin: 0; }
         
-        /* 新纪录的特效文字 */
         .new-record-label {
-            display: none; /* 默认隐藏 */
-            font-size: 18px;
-            color: #ab47bc;
-            background: #f3e5f5;
-            padding: 5px 15px;
-            border-radius: 20px;
-            margin-top: 10px;
-            font-weight: bold;
-            animation: bounce 0.5s infinite alternate;
+            display: none; font-size: 18px; color: #fff; background: #ab47bc;
+            padding: 5px 15px; border-radius: 20px; margin-top: 10px; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(171, 71, 188, 0.4);
+            animation: bounce 0.6s infinite alternate;
         }
 
         .modal-score { font-size: 56px; color: #66bb6a; margin: 10px 0; font-weight: 900; }
-        .modal-desc { color: #8d6e63; font-size: 16px; margin-bottom: 25px; }
+        .modal-desc { color: #8d6e63; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
 
-        .btn-restart {
-            background: #29b6f6;
-            border: none;
-            padding: 15px 40px;
-            font-size: 20px;
-            border-radius: 50px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 5px #0288d1;
-            transition: transform 0.1s;
+        /* 按钮通用样式 */
+        .btn-primary {
+            background: #29b6f6; border: none; padding: 15px 40px; font-size: 20px;
+            border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px #0288d1; transition: transform 0.1s; margin: 5px;
         }
-        .btn-restart:active { transform: translateY(5px); box-shadow: 0 0 #0288d1; }
+        .btn-primary:active { transform: translateY(5px); box-shadow: 0 0 #0288d1; }
+        
+        .btn-secondary {
+            background: #ff7043; border: none; padding: 15px 30px; font-size: 18px;
+            border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px #d84315; transition: transform 0.1s; margin: 5px;
+        }
+        .btn-secondary:active { transform: translateY(5px); box-shadow: 0 0 #d84315; }
 
         .float-text {
-            position: absolute;
-            font-size: 28px;
-            font-weight: 900;
-            pointer-events: none;
-            animation: floatUp 0.6s forwards;
-            z-index: 200;
-            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
+            position: absolute; font-size: 28px; font-weight: 900; pointer-events: none;
+            animation: floatUp 0.6s forwards; z-index: 200; text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
         }
         
         @keyframes floatUp {
@@ -243,60 +216,78 @@
 </head>
 <body>
 
-    <!-- 顶部仪表盘：增加 BEST 展示 -->
-    <div class="dashboard">
-        <div class="dash-item">
-            <div class="dash-label">倒计时</div>
-            <div class="dash-value" id="timer">60.0</div>
-        </div>
-        <div class="dash-item">
-            <div class="dash-label">当前得分</div>
-            <div class="dash-value" id="score">0</div>
-        </div>
-        <div class="dash-item">
-            <div class="dash-label">最高纪录</div>
-            <div class="dash-value" id="best-score">0</div>
+    <!-- 顶部栏 -->
+    <div class="top-bar">
+        <!-- 暂停按钮 -->
+        <div class="btn-pause" onclick="togglePause()">⏸</div>
+        
+        <div class="dashboard">
+            <div class="dash-item">
+                <div class="dash-label">倒计时</div>
+                <div class="dash-value" id="timer">60.0</div>
+            </div>
+            <div class="dash-item">
+                <div class="dash-label">得分</div>
+                <div class="dash-value" id="score">0</div>
+            </div>
+            <div class="dash-item">
+                <div class="dash-label">最高</div>
+                <div class="dash-value" id="best-score">0</div>
+            </div>
         </div>
     </div>
 
     <div class="game-area">
         <div class="grid-container">
-            <div class="hole" id="h1"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h2"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h3"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h4"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h5"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h6"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h7"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h8"><img src="character.png" class="character-img"></div>
-            <div class="hole" id="h9"><img src="character.png" class="character-img"></div>
+            <div class="hole" id="h1"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h2"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h3"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h4"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h5"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h6"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h7"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h8"><img src="character2.png" class="character-img"></div>
+            <div class="hole" id="h9"><img src="character2.png" class="character-img"></div>
         </div>
     </div>
 
     <div class="food-belt-container">
-        <div class="belt-tip">✨ 拖动美食喂他！不喜欢的扔到旁边～ ✨</div>
+        <div class="belt-tip">往左右两边空地扔掉坏东西 🗑️</div>
         <div class="food-belt" id="belt"></div>
     </div>
 
     <!-- 开始界面 -->
-    <div id="start-overlay">
+    <div id="start-overlay" class="overlay-modal">
         <div class="modal-content">
-            <h2 class="modal-title" style="color:#29b6f6">准备好给König喂食了吗？</h2>
-            <p class="modal-desc">把好吃的拖给它<br>坏东西要扔掉哦！</p>
-            <button class="btn-restart" onclick="initGame()">开始游戏</button>
+            <h2 class="modal-title" style="color:#29b6f6">给König喂食！</h2>
+            <p class="modal-desc">1. 把美食拖给他 😋<br>2. 坏东西扔到旁边空地 🗑️</p>
+            <button class="btn-primary" onclick="initGame()">开始游戏</button>
+        </div>
+    </div>
+
+    <!-- 暂停界面 -->
+    <div id="pause-modal" class="overlay-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" style="color:#ffa726">游戏暂停</h2>
+            <p class="modal-desc">休息一下，喝口水~</p>
+            <button class="btn-primary" onclick="togglePause()">继续游戏</button>
+            <br>
+            <button class="btn-secondary" onclick="initGame()">重新开始</button>
         </div>
     </div>
 
     <!-- 结束界面 -->
-    <div id="game-over-modal">
+    <div id="game-over-modal" class="overlay-modal">
         <div class="modal-content">
             <!-- 新纪录标签 -->
-            <div id="new-record-badge" class="new-record-label">🏆 新纪录!</div>
+            <div id="new-record-badge" class="new-record-label">🏆 打破纪录!</div>
             
-            <h2 class="modal-title">时间到啦!</h2>
+            <h2 class="modal-title">时间到!</h2>
             <div class="modal-score" id="final-score">0</div>
-            <p class="modal-desc" id="final-desc">手速还得练练呀~</p>
-            <button class="btn-restart" onclick="initGame()">再玩一次</button>
+            <!-- 评价语 -->
+            <p class="modal-desc" id="final-desc">评价加载中...</p>
+            
+            <button class="btn-primary" onclick="initGame()">再玩一次</button>
         </div>
     </div>
 
@@ -304,36 +295,41 @@
         const GAME_DURATION = 60.0;
         const holes = document.querySelectorAll('.hole');
         const scoreEl = document.getElementById('score');
-        const bestScoreEl = document.getElementById('best-score'); // 新增
+        const bestScoreEl = document.getElementById('best-score');
         const timerEl = document.getElementById('timer');
         const belt = document.getElementById('belt');
-        const modal = document.getElementById('game-over-modal');
-        const startOverlay = document.getElementById('start-overlay');
+        
+        // Modals
+        const modalGameOver = document.getElementById('game-over-modal');
+        const modalStart = document.getElementById('start-overlay');
+        const modalPause = document.getElementById('pause-modal');
+        
         const finalScoreEl = document.getElementById('final-score');
         const finalDescEl = document.getElementById('final-desc');
-        const newRecordBadge = document.getElementById('new-record-badge'); // 新增
+        const newRecordBadge = document.getElementById('new-record-badge');
 
         let score = 0;
         let timeLeft = GAME_DURATION;
         let isPlaying = false;
+        let isPaused = false;
+        
         let timerInterval;
         let spawnTimeout;
+        let foodReplenishTimeout;
         let clockHasSpawned = false;
         
-        // 读取本地存储的最高分，如果没有则默认为 0
+        // 读取本地存储
         let highScore = localStorage.getItem('petGameHighScore') || 0;
         bestScoreEl.textContent = highScore;
 
-        // 食物配置
         const commonItems = [
             { emoji: '🍰', type: 'good', score: 10 },
             { emoji: '🍔', type: 'good', score: 15 },
             { emoji: '🍓', type: 'good', score: 5 }, 
             { emoji: '🍩', type: 'good', score: 8 }, 
-            
             { emoji: '💣', type: 'bad', score: -20 }, 
-            { emoji: '🥦', type: 'bad', score: -5 },
-            { emoji: '🌶️', type: 'bad', score: -8 } 
+            { emoji: '🥦', type: 'bad', score: -5 }
+            
         ];
 
         function randomHole() {
@@ -348,10 +344,33 @@
             return { stayTime, spawnDelay };
         }
 
-        function spawnCharacter() {
+        // --- 暂停功能 ---
+        function togglePause() {
             if (!isPlaying) return;
+
+            if (isPaused) {
+                // 恢复游戏
+                isPaused = false;
+                modalPause.style.display = 'none';
+                // 重启循环
+                spawnCharacter();
+                replenishFood();
+            } else {
+                // 暂停游戏
+                isPaused = true;
+                modalPause.style.display = 'flex';
+                // 清除所有计时器
+                clearTimeout(spawnTimeout);
+                clearTimeout(foodReplenishTimeout);
+            }
+        }
+
+        function spawnCharacter() {
+            if (!isPlaying || isPaused) return;
+
             const { stayTime, spawnDelay } = getDifficultyParams();
             const nextDelay = spawnDelay + (Math.random() * 400);
+            
             spawnTimeout = setTimeout(spawnCharacter, nextDelay);
 
             let hole = randomHole();
@@ -364,7 +383,7 @@
             const warnTime = Math.max(300, stayTime * 0.4); 
 
             setTimeout(() => {
-                if (!isPlaying || !hole.classList.contains('warning')) return;
+                if (!isPlaying || isPaused || !hole.classList.contains('warning')) return;
                 hole.classList.remove('warning');
                 hole.classList.add('active');
                 setTimeout(() => {
@@ -374,17 +393,18 @@
         }
 
         function initGame() {
-            startOverlay.style.display = 'none';
-            modal.style.display = 'none';
-            newRecordBadge.style.display = 'none'; // 隐藏新纪录标签
+            modalStart.style.display = 'none';
+            modalGameOver.style.display = 'none';
+            modalPause.style.display = 'none';
+            newRecordBadge.style.display = 'none';
 
             score = 0;
             timeLeft = GAME_DURATION;
             isPlaying = true;
+            isPaused = false;
             clockHasSpawned = false;
             
             scoreEl.textContent = score;
-            // 确保开局时显示当前的最高分
             bestScoreEl.textContent = highScore;
             
             timerEl.textContent = timeLeft.toFixed(1);
@@ -392,6 +412,7 @@
 
             holes.forEach(h => h.classList.remove('active', 'warning'));
             clearTimeout(spawnTimeout);
+            clearTimeout(foodReplenishTimeout);
             clearInterval(timerInterval);
             belt.innerHTML = '';
             
@@ -399,6 +420,8 @@
             spawnCharacter();
 
             timerInterval = setInterval(() => {
+                if(isPaused) return; // 暂停时不走表
+
                 timeLeft -= 0.1;
                 if(timeLeft < 0) timeLeft = 0;
                 timerEl.textContent = timeLeft.toFixed(1);
@@ -418,36 +441,38 @@
             isPlaying = false;
             clearInterval(timerInterval);
             clearTimeout(spawnTimeout);
+            clearTimeout(foodReplenishTimeout);
             holes.forEach(h => h.classList.remove('active', 'warning'));
 
             // --- 结算逻辑 ---
             let isNewRecord = false;
             if (score > highScore) {
                 highScore = score;
-                localStorage.setItem('petGameHighScore', highScore); // 保存到本地
-                bestScoreEl.textContent = highScore; // 更新顶部显示
+                localStorage.setItem('petGameHighScore', highScore);
+                bestScoreEl.textContent = highScore;
                 isNewRecord = true;
             }
 
-            // --- 评语 ---
+            // --- 【优化2】新纪录与评价共存 ---
             let desc = "König快饿死了，还要加油哦！(｡•́︿•̀｡)";
             if(score > 500) desc = "神之手速！König被喂得胖胖的！(✨ω✨)";
             else if(score > 300) desc = "太强了，König的顶级饲养员！(≧◡≦)";
             else if(score > 100) desc = "干得不错，继续保持！( ^_^)b";
 
-            // 如果是新纪录，显示特殊UI
+            // 如果是新纪录，显示勋章，但描述文字保持不变
             if (isNewRecord && score > 0) {
-                desc = "太棒了！你打破了最高纪录！🎉";
                 newRecordBadge.style.display = 'block';
+            } else {
+                newRecordBadge.style.display = 'none';
             }
 
             finalScoreEl.textContent = score;
             finalDescEl.textContent = desc;
-            modal.style.display = 'flex';
+            modalGameOver.style.display = 'flex';
         }
 
         function replenishFood() {
-            if(belt.children.length < 5) {
+            if (belt.children.length < 5) {
                 let itemData;
                 if (!clockHasSpawned && timeLeft < 30 && Math.random() < 0.25) {
                     itemData = { emoji: '⏰', type: 'clock', score: 0 };
@@ -464,11 +489,15 @@
                 setupDrag(item);
                 belt.appendChild(item);
             }
-            if(isPlaying) setTimeout(replenishFood, 400);
+            if(isPlaying && !isPaused) {
+                foodReplenishTimeout = setTimeout(replenishFood, 400);
+            }
         }
 
         function setupDrag(el) {
             const startDrag = (e) => {
+                if (isPaused) return; // 暂停时不准拖动
+                
                 e.preventDefault();
                 const touch = e.touches ? e.touches[0] : e;
                 const clientX = touch.clientX;
@@ -501,14 +530,21 @@
                     const endTouch = endEvent.changedTouches ? endEvent.changedTouches[0] : endEvent;
                     const endX = endTouch.clientX;
                     const endY = endTouch.clientY;
+                    
+                    // 获取下方元素
                     const elementBelow = document.elementFromPoint(endX, endY);
                     const hole = elementBelow ? elementBelow.closest('.hole') : null;
+                    const isOnBelt = elementBelow ? elementBelow.closest('.food-belt-container') : null;
+
                     let consumed = false;
 
+                    // 1. 扔进洞里 (有效投喂)
                     if (hole && hole.classList.contains('active')) {
                         handleFeed(hole, ghost.dataset.originType, parseInt(ghost.dataset.score), endX, endY);
                         consumed = true;
-                    } else if (!hole && !elementBelow?.closest('.food-belt')) {
+                    } 
+                    // 2. 【优化3】既不是洞，也不在传送带区域 (即扔到了空地) -> 判定为丢弃
+                    else if (!hole && !isOnBelt) {
                         showFloatText("💨", endX, endY, "#90a4ae");
                         consumed = true;
                     }
