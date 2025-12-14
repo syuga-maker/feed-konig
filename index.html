@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>König喂食大作战！</title>
-    <!-- ✅ 1. 脚本放在这里加载更稳定 -->
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     <style>
         /* --- 🎨 全局配色 --- */
@@ -23,7 +22,7 @@
             flex-direction: column;
         }
 
-        /* --- 顶部区域 (包含暂停按钮和仪表盘) --- */
+        /* --- 顶部区域 --- */
         .top-bar {
             display: flex;
             align-items: center;
@@ -31,45 +30,25 @@
             z-index: 20;
         }
 
-        /* 暂停按钮 */
         .btn-pause {
-            width: 45px;
-            height: 45px;
-            background: #fff;
-            border: 3px solid #ffa726;
-            border-radius: 50%;
-            font-size: 20px;
-            color: #ffa726;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin-right: 10px;
-            flex-shrink: 0;
+            width: 45px; height: 45px;
+            background: #fff; border: 3px solid #ffa726; border-radius: 50%;
+            font-size: 20px; color: #ffa726;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-right: 10px; flex-shrink: 0;
         }
         .btn-pause:active { transform: scale(0.9); }
 
-        /* 仪表盘 */
         .dashboard {
-            flex: 1; /* 占满剩余空间 */
-            background: #ffffff;
-            padding: 5px 0;
-            border-radius: 20px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 8px 20px rgba(255, 167, 38, 0.2);
-            height: 65px;
+            flex: 1; background: #ffffff; padding: 5px 0; border-radius: 20px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 8px 20px rgba(255, 167, 38, 0.2); height: 65px;
         }
 
         .dash-item { text-align: center; flex: 1; }
-        .dash-label {
-            font-size: 10px; color: #ffa726; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;
-        }
-        .dash-value {
-            font-size: 24px; font-weight: 900; font-family: "Courier New", monospace;
-        }
+        .dash-label { font-size: 10px; color: #ffa726; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px; }
+        .dash-value { font-size: 24px; font-weight: 900; font-family: "Courier New", monospace; }
 
         #timer { color: #ff7043; } 
         #score { color: #66bb6a; } 
@@ -77,34 +56,19 @@
 
         /* --- 游戏主区域 --- */
         .game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* 垂直居中 */
-            position: relative;
-            /* 【优化3】底部增加留白，把网格顶上去，远离传送带 */
-            padding-bottom: 140px; 
+            flex: 1; display: flex; flex-direction: column; justify-content: center;
+            position: relative; padding-bottom: 140px; 
         }
 
-        /* 3x3 网格 */
         .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px; /* 间距 */
-            width: 300px; /* 固定最大宽度 */
-            /* 【优化3】限制宽度为80vw，保证手机左右有各10%的空隙扔垃圾 */
-            max-width: 80vw; 
-            margin: 0 auto;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
+            width: 300px; max-width: 80vw; margin: 0 auto;
         }
 
         .hole {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background-color: #ffe0b2; 
-            border-radius: 50%;
-            position: relative;
-            border: 5px solid #ffcc80; 
-            overflow: hidden;
+            width: 100%; aspect-ratio: 1 / 1;
+            background-color: #ffe0b2; border-radius: 50%; position: relative;
+            border: 5px solid #ffcc80; overflow: hidden;
             box-shadow: inset 0 5px 15px rgba(141, 110, 99, 0.2);
             transition: transform 0.1s;
         }
@@ -127,16 +91,10 @@
 
         /* --- 底部传送带 --- */
         .food-belt-container {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 130px; /* 固定高度 */
-            background-color: #ffffff;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
+            position: absolute; bottom: 0; width: 100%; height: 130px;
+            background-color: #ffffff; border-top-left-radius: 30px; border-top-right-radius: 30px;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            padding-bottom: env(safe-area-inset-bottom);
-            z-index: 10;
+            padding-bottom: env(safe-area-inset-bottom); z-index: 10;
         }
         
         .belt-tip {
@@ -144,8 +102,7 @@
         }
 
         .food-belt {
-            height: 90px;
-            display: flex; align-items: center; justify-content: space-around; padding: 0 10px;
+            height: 90px; display: flex; align-items: center; justify-content: space-around; padding: 0 10px;
         }
 
         .draggable-item {
@@ -158,16 +115,23 @@
             position: fixed; font-size: 70px; pointer-events: none; opacity: 0.9; z-index: 999;
         }
 
-        /* --- 弹窗样式 (通用) --- */
+        /* --- 弹窗样式 --- */
         .overlay-modal {
-            display: none;
+            display: none; /* 默认隐藏，由JS控制 */
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px);
             z-index: 1000;
             flex-direction: column; justify-content: center; align-items: center;
             animation: fadeIn 0.3s;
         }
-        #start-overlay { display: flex; }
+        
+        /* 加载界面特有样式 */
+        #loading-overlay { display: flex; z-index: 2000; background: #fff9c4; }
+        .loading-spinner {
+            width: 40px; height: 40px; border: 4px solid #ffcc80;
+            border-top: 4px solid #ff7043; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
 
         .modal-content {
             background: #fff; padding: 30px; border-radius: 30px; text-align: center;
@@ -187,7 +151,6 @@
         .modal-score { font-size: 56px; color: #66bb6a; margin: 10px 0; font-weight: 900; }
         .modal-desc { color: #8d6e63; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
 
-        /* 按钮通用样式 */
         .btn-primary {
             background: #29b6f6; border: none; padding: 15px 40px; font-size: 20px;
             border-radius: 50px; color: white; font-weight: bold; cursor: pointer;
@@ -213,6 +176,7 @@
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
 </head>
@@ -220,9 +184,7 @@
 
     <!-- 顶部栏 -->
     <div class="top-bar">
-        <!-- 暂停按钮 -->
         <div class="btn-pause" onclick="togglePause()">⏸</div>
-        
         <div class="dashboard">
             <div class="dash-item">
                 <div class="dash-label">倒计时</div>
@@ -239,8 +201,10 @@
         </div>
     </div>
 
+    <!-- 游戏主区 -->
     <div class="game-area">
         <div class="grid-container">
+            <!-- 洞口与图片 -->
             <div class="hole" id="h1"><img src="character3.png" class="character-img"></div>
             <div class="hole" id="h2"><img src="character3.png" class="character-img"></div>
             <div class="hole" id="h3"><img src="character3.png" class="character-img"></div>
@@ -258,6 +222,12 @@
         <div class="food-belt" id="belt"></div>
     </div>
 
+    <!-- 【新增】加载界面 -->
+    <div id="loading-overlay" class="overlay-modal">
+        <div class="loading-spinner"></div>
+        <h3 style="color:#ff7043">准备食材中...</h3>
+    </div>
+
     <!-- 开始界面 -->
     <div id="start-overlay" class="overlay-modal">
         <div class="modal-content">
@@ -265,18 +235,13 @@
             <p class="modal-desc">1. 把美食拖给他 😋<br>2. 坏东西扔到旁边空地 🗑️</p>
             <button class="btn-primary" onclick="initGame()">开始游戏</button>
 
-            <!-- ✅ 2. 统计代码已移至此处，增加了样式美化，完美融入开始菜单 -->
             <div style="margin-top: 25px; border-top: 2px dashed #ffe0b2; padding-top: 15px; font-size: 12px; color: #a1887f;">
-               
 				 <span id="busuanzi_container_site_uv" style="display:none">
                     累计 <span id="busuanzi_value_site_uv" style="color: #29b6f6; font-weight: bold;"></span> 名饲养员
                 </span>
-				
 				<span id="busuanzi_container_site_pv" style="display:none">
                     喂了König <span id="busuanzi_value_site_pv" style="color: #ff7043; font-weight: bold;"></span> 次
                 </span>
-              
-               
             </div>
         </div>
     </div>
@@ -288,22 +253,21 @@
             <p class="modal-desc">休息一下，喝口水~</p>
             <button class="btn-primary" onclick="togglePause()">继续游戏</button>
             <br>
-            <button class="btn-secondary" onclick="initGame()">重新开始</button>
+            <!-- 这里的按钮改为返回主菜单，而不是直接开始 -->
+            <button class="btn-secondary" onclick="returnToMenu()">重新开始</button>
         </div>
     </div>
 
     <!-- 结束界面 -->
     <div id="game-over-modal" class="overlay-modal">
         <div class="modal-content">
-            <!-- 新纪录标签 -->
             <div id="new-record-badge" class="new-record-label">🏆 打破纪录!</div>
-            
             <h2 class="modal-title">时间到!</h2>
             <div class="modal-score" id="final-score">0</div>
-            <!-- 评价语 -->
             <p class="modal-desc" id="final-desc">评价加载中...</p>
             
-            <button class="btn-primary" onclick="initGame()">再玩一次</button>
+            <!-- 这里的按钮改为返回主菜单，而不是直接开始 -->
+            <button class="btn-primary" onclick="returnToMenu()">再玩一次</button>
         </div>
     </div>
 
@@ -316,6 +280,7 @@
         const belt = document.getElementById('belt');
         
         // Modals
+        const modalLoading = document.getElementById('loading-overlay');
         const modalGameOver = document.getElementById('game-over-modal');
         const modalStart = document.getElementById('start-overlay');
         const modalPause = document.getElementById('pause-modal');
@@ -328,7 +293,6 @@
         let timeLeft = GAME_DURATION;
         let isPlaying = false;
         let isPaused = false;
-        
         let timerInterval;
         let spawnTimeout;
         let foodReplenishTimeout;
@@ -345,8 +309,62 @@
             { emoji: '🍩', type: 'good', score: 8 }, 
             { emoji: '💣', type: 'bad', score: -20 }, 
             { emoji: '🥦', type: 'bad', score: -5 }
-            
         ];
+
+        // --- 1. 音频控制 ---
+        // 建议在项目根目录准备这三个文件，如果没有文件，代码会捕获错误并静默失败
+        const sounds = {
+            eat: new Audio('sound_eat.wav'),
+            broccoli: new Audio('sound_broccoli.mp3'),
+            bomb: new Audio('sound_boom.wav')
+        };
+
+        function playSound(name) {
+            try {
+                if(sounds[name]) {
+                    sounds[name].currentTime = 0; // 重置播放进度，实现快速连点播放
+                    sounds[name].play().catch(e => console.log("Audio play failed (interaction needed first):", e));
+                }
+            } catch (e) {
+                console.warn("Sound not found or error:", e);
+            }
+        }
+
+        // --- 2. 资源预加载 ---
+        function preloadAssets() {
+            const imageSrc = 'character3.png';
+            const audioSrcs = Object.values(sounds).map(audio => audio.src).filter(src => src !== "");
+            
+            let loadedCount = 0;
+            const totalAssets = 1 + audioSrcs.length; // 1图片 + 音频数量
+
+            const checkDone = () => {
+                loadedCount++;
+                if (loadedCount >= totalAssets) {
+                    // 全部加载完毕，稍微延时一下让用户看到（避免闪烁）
+                    setTimeout(() => {
+                        modalLoading.style.display = 'none';
+                        modalStart.style.display = 'flex';
+                    }, 500);
+                }
+            };
+
+            // 加载图片
+            const img = new Image();
+            img.onload = checkDone;
+            img.onerror = checkDone; // 即使失败也继续，避免卡死
+            img.src = imageSrc;
+
+            // 检查音频 (音频加载比较玄学，这里用简单的方式，或者直接跳过等待)
+            // 为了保证体验，我们简单模拟等待，实际浏览器会在后台加载
+            // 如果希望严格等待音频，可以监听 'canplaythrough'，但通常移动端不需要严格等待
+            audioSrcs.forEach(src => checkDone());
+            if(audioSrcs.length === 0) checkDone();
+        }
+
+        // 页面加载完成后开始预加载
+        window.onload = preloadAssets;
+
 
         function randomHole() {
             const idx = Math.floor(Math.random() * holes.length);
@@ -360,52 +378,38 @@
             return { stayTime, spawnDelay };
         }
 
-        // --- 暂停功能 ---
+        // --- 3. 游戏流程控制 ---
+
+        // 返回主菜单（确认开始的逻辑）
+        function returnToMenu() {
+            isPlaying = false;
+            isPaused = false;
+            
+            modalGameOver.style.display = 'none';
+            modalPause.style.display = 'none';
+            modalStart.style.display = 'flex'; // 显示主菜单
+            
+            // 简单清理
+            clearTimeout(spawnTimeout);
+            clearTimeout(foodReplenishTimeout);
+            clearInterval(timerInterval);
+            holes.forEach(h => h.classList.remove('active', 'warning'));
+            belt.innerHTML = '';
+        }
+
         function togglePause() {
             if (!isPlaying) return;
-
             if (isPaused) {
-                // 恢复游戏
                 isPaused = false;
                 modalPause.style.display = 'none';
-                // 重启循环
                 spawnCharacter();
                 replenishFood();
             } else {
-                // 暂停游戏
                 isPaused = true;
                 modalPause.style.display = 'flex';
-                // 清除所有计时器
                 clearTimeout(spawnTimeout);
                 clearTimeout(foodReplenishTimeout);
             }
-        }
-
-        function spawnCharacter() {
-            if (!isPlaying || isPaused) return;
-
-            const { stayTime, spawnDelay } = getDifficultyParams();
-            const nextDelay = spawnDelay + (Math.random() * 400);
-            
-            spawnTimeout = setTimeout(spawnCharacter, nextDelay);
-
-            let hole = randomHole();
-            if (hole.classList.contains('active') || hole.classList.contains('warning')) {
-                hole = randomHole();
-                if (hole.classList.contains('active') || hole.classList.contains('warning')) return;
-            }
-
-            hole.classList.add('warning');
-            const warnTime = Math.max(300, stayTime * 0.4); 
-
-            setTimeout(() => {
-                if (!isPlaying || isPaused || !hole.classList.contains('warning')) return;
-                hole.classList.remove('warning');
-                hole.classList.add('active');
-                setTimeout(() => {
-                    hole.classList.remove('active');
-                }, stayTime);
-            }, warnTime);
         }
 
         function initGame() {
@@ -436,7 +440,7 @@
             spawnCharacter();
 
             timerInterval = setInterval(() => {
-                if(isPaused) return; // 暂停时不走表
+                if(isPaused) return;
 
                 timeLeft -= 0.1;
                 if(timeLeft < 0) timeLeft = 0;
@@ -460,7 +464,6 @@
             clearTimeout(foodReplenishTimeout);
             holes.forEach(h => h.classList.remove('active', 'warning'));
 
-            // --- 结算逻辑 ---
             let isNewRecord = false;
             if (score > highScore) {
                 highScore = score;
@@ -469,13 +472,11 @@
                 isNewRecord = true;
             }
 
-            // --- 【优化2】新纪录与评价共存 ---
             let desc = "König快饿死了，还要加油哦！(｡•́︿•̀｡)";
             if(score > 500) desc = "神之手速！König被喂得胖胖的！(✨ω✨)";
             else if(score > 300) desc = "太强了，König的顶级饲养员！(≧◡≦)";
             else if(score > 100) desc = "干得不错，继续保持！( ^_^)b";
 
-            // 如果是新纪录，显示勋章，但描述文字保持不变
             if (isNewRecord && score > 0) {
                 newRecordBadge.style.display = 'block';
             } else {
@@ -485,6 +486,33 @@
             finalScoreEl.textContent = score;
             finalDescEl.textContent = desc;
             modalGameOver.style.display = 'flex';
+        }
+
+        function spawnCharacter() {
+            if (!isPlaying || isPaused) return;
+
+            const { stayTime, spawnDelay } = getDifficultyParams();
+            const nextDelay = spawnDelay + (Math.random() * 400);
+            
+            spawnTimeout = setTimeout(spawnCharacter, nextDelay);
+
+            let hole = randomHole();
+            if (hole.classList.contains('active') || hole.classList.contains('warning')) {
+                hole = randomHole();
+                if (hole.classList.contains('active') || hole.classList.contains('warning')) return;
+            }
+
+            hole.classList.add('warning');
+            const warnTime = Math.max(300, stayTime * 0.4); 
+
+            setTimeout(() => {
+                if (!isPlaying || isPaused || !hole.classList.contains('warning')) return;
+                hole.classList.remove('warning');
+                hole.classList.add('active');
+                setTimeout(() => {
+                    hole.classList.remove('active');
+                }, stayTime);
+            }, warnTime);
         }
 
         function replenishFood() {
@@ -502,6 +530,8 @@
                 item.textContent = itemData.emoji;
                 item.dataset.type = itemData.type;
                 item.dataset.score = itemData.score;
+                // 将具体的 emoji 存入 dataset，方便后续判断音效
+                item.dataset.emoji = itemData.emoji; 
                 setupDrag(item);
                 belt.appendChild(item);
             }
@@ -512,7 +542,7 @@
 
         function setupDrag(el) {
             const startDrag = (e) => {
-                if (isPaused) return; // 暂停时不准拖动
+                if (isPaused) return;
                 
                 e.preventDefault();
                 const touch = e.touches ? e.touches[0] : e;
@@ -526,6 +556,9 @@
                 ghost.style.top = (clientY - 35) + 'px';
                 ghost.dataset.originType = el.dataset.type;
                 ghost.dataset.score = el.dataset.score;
+                // 传递 emoji
+                ghost.dataset.emoji = el.dataset.emoji;
+
                 document.body.appendChild(ghost);
                 
                 el.style.opacity = '0';
@@ -547,7 +580,6 @@
                     const endX = endTouch.clientX;
                     const endY = endTouch.clientY;
                     
-                    // 获取下方元素
                     const elementBelow = document.elementFromPoint(endX, endY);
                     const hole = elementBelow ? elementBelow.closest('.hole') : null;
                     const isOnBelt = elementBelow ? elementBelow.closest('.food-belt-container') : null;
@@ -556,10 +588,10 @@
 
                     // 1. 扔进洞里 (有效投喂)
                     if (hole && hole.classList.contains('active')) {
-                        handleFeed(hole, ghost.dataset.originType, parseInt(ghost.dataset.score), endX, endY);
+                        handleFeed(hole, ghost.dataset.originType, parseInt(ghost.dataset.score), ghost.dataset.emoji, endX, endY);
                         consumed = true;
                     } 
-                    // 2. 【优化3】既不是洞，也不在传送带区域 (即扔到了空地) -> 判定为丢弃
+                    // 2. 扔到空地 (丢弃)
                     else if (!hole && !isOnBelt) {
                         showFloatText("💨", endX, endY, "#90a4ae");
                         consumed = true;
@@ -591,9 +623,22 @@
             setTimeout(() => floatEl.remove(), 600);
         }
 
-        function handleFeed(hole, type, points, x, y) {
+        // --- 4. 修改处理喂食逻辑（添加音效判定）---
+        function handleFeed(hole, type, points, emoji, x, y) {
             hole.classList.remove('active'); 
 
+            // 根据 emoji 或 type 播放音效
+            if (emoji === '🥦') {
+                playSound('broccoli'); // 吃到西兰花
+            } else if (emoji === '💣') {
+                playSound('bomb');     // 吃到炸弹
+            } else if (type === 'good') {
+                playSound('eat');      // 吃到好东西
+            } else if (type === 'clock') {
+                playSound('eat');      // 吃闹钟也算吃
+            }
+
+            // 分数逻辑保持不变
             if (type === 'good') {
                 score += points;
                 showFloatText("+" + points, x, y, "#66bb6a"); 
@@ -611,4 +656,3 @@
     </script>
 </body>
 </html>
-
